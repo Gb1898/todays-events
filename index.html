@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Today's Events</title>
+  <style>
+    body {
+      background: #1e1e1e;
+      color: white;
+      font-family: sans-serif;
+      padding: 30px;
+    }
+    h2 {
+      font-size: 1.5em;
+      margin-top: 1em;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Today's Events</h1>
+  <div id="calendar-events">Loading...</div>
+
+  <script>
+    const apiKey = 'AIzaSyASL0wY0Mfra3XJOH7-OAqF61rWKTCLObk';
+
+    const calendars = [
+      {
+        id: 'c_b41d9592e175651e08d8e261b18b9789f807fc2fd98906cdf6713a9339febe51@group.calendar.google.com',
+        name: 'LES Building Calendar'
+      },
+      {
+        id: 'c_2d6dd077d98f1d0eaaf873ffc779de4ad0572dbb64b1a815a15f4264786b15f8@group.calendar.google.com',
+        name: 'LES Reservations'
+      },
+      {
+        id: 'en.usa#holiday@group.v.calendar.google.com',
+        name: 'Holidays in United States'
+      }
+    ];
+
+    const now = new Date();
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+    const endOfDay = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+
+    const eventContainer = document.getElementById('calendar-events');
+    eventContainer.innerHTML = '';
+
+    Promise.all(calendars.map(calendar => {
+      const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendar.id)}/events?key=${apiKey}&timeMin=${startOfDay}&timeMax=${endOfDay}&singleEvents=true&orderBy=startTime`;
+
+      return fetch(url)
+        .then(res => res.json())
+        .then(data => ({ name: calendar.name, items: data.items || [] }))
+        .catch(err => {
+          console.error(`Error loading calendar ${calendar.name}`, err);
+          return { name: calendar.name, items: [] };
+        });
+    }))
+    .then(results => {
+      results.forEach(({ name, items }) => {
+        const calHeader = document.createElement('h2');
+        calHeader.textContent = name;
+        eventContainer.appendChild(calHeader);
+
+        const ul = document.createElement('ul');
+
+        if (items.length === 0) {
+          const li = document.createElement('li');
+          li.textContent = 'No events today.';
+          ul.appendChild(li);
+        } else {
+          items.forEach(event => {
+            const li = document.createElement('li');
+            const start = new Date(event.start.dateTime || event.start.date);
+            li.textContent = `${start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} — ${event.summary}`;
+            ul.appendChild(li);
+          });
+        }
+
+        eventContainer.appendChild(ul);
+      });
+    });
+  </script>
+</body>
+</html>
