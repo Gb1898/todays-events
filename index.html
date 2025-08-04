@@ -59,7 +59,10 @@
     const eventContainer = document.getElementById('calendar-events');
     eventContainer.innerHTML = '';
 
-    Promise.all(calendars.map(calendar => {
+    function fetchEvents() {
+  eventContainer.innerHTML = '';
+
+  Promise.all(calendars.map(calendar => {
       const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendar.id)}/events?key=${apiKey}&timeMin=${startOfDay}&timeMax=${endOfDay}&singleEvents=true&orderBy=startTime`;
 
       return fetch(url)
@@ -90,6 +93,13 @@
         eventContainer.appendChild(ul);
       });
     });
+}
+
+// Initial fetch
+fetchEvents();
+
+// Refresh every 5 minutes (300,000 ms)
+setInterval(fetchEvents, 300000);
   </script>
 </body>
 </html>
