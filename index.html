@@ -5,118 +5,16 @@
   <title>Today's Events</title>
   <style>
     body {
-      background: 1e1e1e;
-      color: white;
-      font-family: sans-serif;
-      padding: 30px;
-      text-align: center;
-      font-size: 2.5em; /* Base font size for events */
-    }
-    h2 {
-      font-size: 1.2em; /* Smaller header for calendar labels */
-      margin-top: 1em;
-    }
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    li {
-      margin-bottom: 10px;
-    }
-  </style>
-</head>
-<body>
-  <div id="calendar-events">Loading...</div>
-
-  <script>
-    const apiKey = 'AIzaSyASL0wY0Mfra3XJOH7-OAqF61rWKTCLObk';
-
-    const calendars = [
-      {
-        id: 'c_b41d9592e175651e08d8e261b18b9789f807fc2fd98906cdf6713a9339febe51@group.calendar.google.com',
-        name: 'LES Building Calendar'
-      },
-      {
-        id: 'c_2d6dd077d98f1d0eaaf873ffc779de4ad0572dbb64b1a815a15f4264786b15f8@group.calendar.google.com',
-        name: 'LES Reservations'
-      },
-      {
-        id: 'en.usa#holiday@group.v.calendar.google.com',
-        name: 'Holidays in United States'
-      },
-      // 🔽 Easily Removable Test Calendar
-      {
-        id: 'c_82c13b170a9d33431af3216686cbb4e3695c5e082a2b6c00c2d1ed16f0401c31@group.calendar.google.com',
-        name: 'Event Testing'
-      }
-      // 🔼 End of Test Calendar
-    ];
-
-    const now = new Date();
-    const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-    const endOfDay = new Date(now.setHours(23, 59, 59, 999)).toISOString();
-
-    const eventContainer = document.getElementById('calendar-events');
-    eventContainer.innerHTML = '';
-
-    function fetchEvents() {
-      eventContainer.innerHTML = '';
-
-      Promise.all(calendars.map(calendar => {
-        const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendar.id)}/events?key=${apiKey}&timeMin=${startOfDay}&timeMax=${endOfDay}&singleEvents=true&orderBy=startTime`;
-
-        return fetch(url)
-          .then(res => res.json())
-          .then(data => ({ name: calendar.name, items: data.items || [] }))
-          .catch(err => {
-            console.error(`Error loading calendar ${calendar.name}`, err);
-            return { name: calendar.name, items: [] };
-          });
-      }))
-      .then(results => {
-        results.forEach(({ name, items }) => {
-          if (items.length === 0) return;
-
-          const calHeader = document.createElement('h2');
-          calHeader.textContent = name;
-          eventContainer.appendChild(calHeader);
-
-          const ul = document.createElement('ul');
-
-          items.forEach(event => {
-            const li = document.createElement('li');
-            const start = new Date(event.start.dateTime || event.start.date);
-            li.textContent = `${start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} — ${event.summary}`;
-            ul.appendChild(li);
-          });
-
-          eventContainer.appendChild(ul);
-        });
-      });
-    }
-
-    fetchEvents();
-    setInterval(fetchEvents, 300000); // refresh every 5 min
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Today's Events</title>
-  <style>
-    body {
       background: #1e1e1e;
       color: white;
       font-family: sans-serif;
-      padding: 30px;
+      padding: 15px;
       text-align: Left;
-      font-size: 2.2em; /* Base font size for events */
+      font-size: 2em;
     }
     h2 {
-      font-size: 1em; /* Smaller header for calendar labels */
-      margin-top: 1em;
+      font-size: 1em;
+      margin-top: .5em;
     }
     ul {
       list-style: none;
@@ -159,7 +57,6 @@
     const endOfDay = new Date(now.setHours(23, 59, 59, 999)).toISOString();
 
     const eventContainer = document.getElementById('calendar-events');
-    eventContainer.innerHTML = '';
 
     function fetchEvents() {
       eventContainer.innerHTML = '';
@@ -188,7 +85,9 @@
           items.forEach(event => {
             const li = document.createElement('li');
             const start = new Date(event.start.dateTime || event.start.date);
-            li.textContent = `${start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} — ${event.summary}`;
+            const isAllDay = !event.start.dateTime;
+            const timeStr = isAllDay ? 'All Day' : start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            li.textContent = `${timeStr} — ${event.summary}`;
             ul.appendChild(li);
           });
 
@@ -198,7 +97,7 @@
     }
 
     fetchEvents();
-    setInterval(fetchEvents, 300000); // refresh every 5 min
+    setInterval(fetchEvents, 30000); // refresh every 5 minutes
   </script>
 </body>
 </html>
