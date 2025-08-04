@@ -8,7 +8,7 @@
       background: 1e1e1e;
       color: white;
       font-family: sans-serif;
-      padding: 15px;
+      padding: 30px;
       text-align: Left;
       font-size: 2em;
     }
@@ -26,7 +26,7 @@
   </style>
 </head>
 <body>
-  <div id="calendar-events">...</div>
+  <div id="calendar-events">Loading...</div>
 
   <script>
     const apiKey = 'AIzaSyASL0wY0Mfra3XJOH7-OAqF61rWKTCLObk';
@@ -44,12 +44,10 @@
         id: 'en.usa#holiday@group.v.calendar.google.com',
         name: 'Holidays in United States'
       },
-      // 🔽 Easily Removable Test Calendar
       {
-        id: 'c_82c13b170a9d33431af3216686cbb4e3695c5e082a2b6c00c2d1ed16f0401c31@group.calendar.google.com',
+        id: 'c_d86a8ab1e4963c830ba22daa51368e924b50362cfb03f8c073b6896c9f6a3c88@group.calendar.google.com',
         name: 'Event Testing'
       }
-      // 🔼 End of Test Calendar
     ];
 
     const now = new Date();
@@ -85,9 +83,31 @@
           items.forEach(event => {
             const li = document.createElement('li');
             const start = new Date(event.start.dateTime || event.start.date);
+            const end = new Date(event.end.dateTime || event.end.date);
+
+            let label;
+
             const isAllDay = !event.start.dateTime;
-            const timeStr = isAllDay ? 'All Day' : start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-            li.textContent = `${timeStr} — ${event.summary}`;
+            const isMidnightToMidnight = (
+              start.getHours() === 0 &&
+              start.getMinutes() === 0 &&
+              end.getHours() === 0 &&
+              end.getMinutes() === 0 &&
+              (end.getTime() - start.getTime()) === 24 * 60 * 60 * 1000
+            );
+
+            const totalDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
+            const currentDay = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (isAllDay || isMidnightToMidnight) {
+              label = 'All Day';
+            } else if (totalDays > 1 && now >= start && now < end) {
+              label = `Day ${currentDay} of ${totalDays}`;
+            } else {
+              label = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            li.textContent = `${label} — ${event.summary}`;
             ul.appendChild(li);
           });
 
@@ -97,7 +117,7 @@
     }
 
     fetchEvents();
-    setInterval(fetchEvents, 30000); // refresh every 5 minutes
+    setInterval(fetchEvents, 300000); // refresh every 5 minutes
   </script>
 </body>
 </html>
