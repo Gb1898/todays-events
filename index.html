@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Today's Events</title>
   <style>
     body {
-      background: transparent;
+      background: #1e1e1e;
       color: white;
       font-family: sans-serif;
       padding: 30px;
       text-align: center;
+      font-size: 1.4em;
     }
     h2 {
       font-size: 1.5em;
@@ -19,12 +21,11 @@
       padding-left: 0;
     }
     li {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Today's Events</h1>
   <div id="calendar-events">Loading...</div>
 
   <script>
@@ -43,7 +44,6 @@
         id: 'en.usa#holiday@group.v.calendar.google.com',
         name: 'Holidays in United States'
       },
-
       // 🔽 Easily Removable Test Calendar
       {
         id: 'c_82c13b170a9d33431af3216686cbb4e3695c5e082a2b6c00c2d1ed16f0401c31@group.calendar.google.com',
@@ -72,24 +72,20 @@
     }))
     .then(results => {
       results.forEach(({ name, items }) => {
+        if (items.length === 0) return; // Skip if no events
+
         const calHeader = document.createElement('h2');
         calHeader.textContent = name;
         eventContainer.appendChild(calHeader);
 
         const ul = document.createElement('ul');
 
-        if (items.length === 0) {
+        items.forEach(event => {
           const li = document.createElement('li');
-          li.textContent = 'No events today.';
+          const start = new Date(event.start.dateTime || event.start.date);
+          li.textContent = `${start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} — ${event.summary}`;
           ul.appendChild(li);
-        } else {
-          items.forEach(event => {
-            const li = document.createElement('li');
-            const start = new Date(event.start.dateTime || event.start.date);
-            li.textContent = `${start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} — ${event.summary}`;
-            ul.appendChild(li);
-          });
-        }
+        });
 
         eventContainer.appendChild(ul);
       });
